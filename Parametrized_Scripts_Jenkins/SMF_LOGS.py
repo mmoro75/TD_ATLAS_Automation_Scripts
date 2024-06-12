@@ -103,7 +103,7 @@ def FilesDownload(hostname,path,fileList,psw):
         print(f"ftp connection established executing\n")
         ftp = ssh.open_sftp()
         for file in fileList:
-            ftp.get("/ThomsonReuters/smf/log/" + file, path +"\\" + file )
+            ftp.get("/ThomsonReuters/smf/log/" + file, path +"\\" +VenueName+ "_"  + file )
         ftp.close()
         ssh.close()  # close connection
         return None
@@ -134,7 +134,7 @@ def Find_Critical(path, today):
     try:
         patt = r"\bCritical\b"
         fo = open(path + "\\" +VenueName+ "_smf-log-files." + today + ".txt", "r")  # open host file in read mode
-        fo2 = open(path + "\\" +VenueName+ "_Critical_log-" + today + ".txt", "w")  # open file in write mode
+        fo2 = open(path + "\\" +VenueName+ "_CRITICAL_log-" + today + ".txt", "w")  # open file in write mode
         files_lines = fo.readlines()  # readlines create a list with each line of the file
         for each_line in files_lines:  # loop into list crreated
             if re.findall(patt, each_line):  # only print when you fine key word DDNA or DDNB
@@ -153,7 +153,7 @@ def Find_Warning(path, today):
     try:
         patt = r"\bWarning\b"
         fo = open(path + "\\" +VenueName+ "_smf-log-files." + today + ".txt", "r")  # open host file in read mode
-        fo2 = open(path + "\\" +VenueName+ "_Warning_log-" + today + ".txt", "w")  # open file in write mode
+        fo2 = open(path + "\\" +VenueName+ "_WARNING_log-" + today + ".txt", "w")  # open file in write mode
         files_lines = fo.readlines()  # readlines create a list with each line of the file
         for each_line in files_lines:  # loop into list crreated
             if re.findall(patt, each_line):  # only print when you fine key word DDNA or DDNB
@@ -168,13 +168,16 @@ def Find_Warning(path, today):
         print(e)
         quit()
 
-def Find_Critical_Files(path,fileList):
+def Find_Critical_Files(path, fileList):
     try:
         my_dir = path
         patt = r"\bCritical\b"
+        files = []
         for f in fileList:
+            files.append("".join(VenueName + "_" + f))
+        for f in files:
             fo = open(my_dir + "\\" + f, "r")  # open host file in read mode
-            fo1 = open(my_dir + "\\" +VenueName+ "_Critical-logs-MultipleFiles.txt", "a")
+            fo1 = open(my_dir + "\\" + VenueName + "_CRITICAL-logs-MULTIPLE_FILES.txt", "a")
             fo1.write(f"\n CRITICAL ERRORS IN  {f}\n \n")
             files_lines = fo.readlines()  # readlines create a list with each line of the file
             for each_line in files_lines:
@@ -186,19 +189,23 @@ def Find_Critical_Files(path,fileList):
         return None
 
     except FileNotFoundError:
-        print(f"SMF file not found make sure SMF file to analyze is downloaded at {path}")
+        print(f"!!!!!SMF file not found make sure SMF file to analyze is downloaded at {path}")
         quit()
     except Exception as e:
         print(e)
         quit()
 
-def Find_Warning_Files(path,fileList):
+
+def Find_Warning_Files(path, fileList):
     try:
         my_dir = path
         patt = r"\bWarning\b"
+        files = []
         for f in fileList:
+            files.append("".join(VenueName + "_" + f))
+        for f in files:
             fo = open(my_dir + "\\" + f, "r")  # open host file in read mode
-            fo1 = open(my_dir + "\\" + VenueName+ "_Warning-log-multipleFiles.txt", "a")
+            fo1 = open(my_dir + "\\" + VenueName + "_WARNING-log-MULTIPLE_FILES.txt", "a")
             fo1.write(f"\n WARNING ERRORS IN  {f}\n \n")
             files_lines = fo.readlines()  # readlines create a list with each line of the file
             for each_line in files_lines:  # loop into list crreated
@@ -214,6 +221,8 @@ def Find_Warning_Files(path,fileList):
     except Exception as e:
         print(e)
         quit()
+
+
 
 ErrorLogs()
 

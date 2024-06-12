@@ -72,8 +72,8 @@ def check_persist(ric_list,persist_file):
             os.chdir("C:\\PMAT\\x64")
 
             os.system(f"PMAT dump --dll schema_V9.dll --db {persist_file} --ric {r} --MARKET_PRICE> {r}.txt")
-            filename = f"C:\\PMAT\\x64\\{r}.txt"
-            os.startfile(filename)
+            filename = f"C:\\PMAT\\x64\\{r}"
+            os.system(f"copy {filename} C:\\Users\\U6017127\\.jenkins\\workspace\\RICs_Perist_File\\")
 
     except FileNotFoundError:
         print(f"File not found make sure {persist_file} file to analyze is downloaded at C:\\PMAT\\x64")
