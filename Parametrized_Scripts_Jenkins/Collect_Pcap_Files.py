@@ -15,29 +15,31 @@ def get_pcap():
     global seconds
     global eth
     global path
+    global output_host
     
     today = datetime.datetime.now().strftime("%Y%m%d")
-    path = sys.argv[1]
+    path = "C:\\Users\\U6017127\\.jenkins\\workspace\\Collect_PCAP_File_From_Venue"
     try:
-      seconds=sys.argv[2]
+      seconds=sys.argv[1]
       seconds = int(seconds)
     except ValueError:
         print("Please provide time in seconds and press Execute to continue")
-    hostname = sys.argv[3]
-    psw = sys.argv[4]
-    eth = sys.argv[5]
-    VenueName = sys.argv[6]
+    hostname = sys.argv[2]
+    psw = sys.argv[3]
+    output_host = output_host(hostname,psw)
+    eth = sys.argv[4]
+    
     if eth.upper() == "DDNA":
        eth_ddn = find_eth_ddna(hostname,path,psw)
        tcpdump_installation(hostname,psw)
-       filename = VenueName + "_DDNA_Capture-" + today + ".pcap"
+       filename = output_host + "_DDNA_Capture-" + today + ".pcap"
        collect_pcap_ddna(hostname, eth_ddn, filename, seconds, path,psw)
        Rm_file(hostname,filename,psw)
 
     elif eth.upper() == "EXCHA":
         eth_exch = find_eth_exch(hostname, path,psw)
         tcpdump_installation(hostname,psw)
-        filename = "EXCHA_Capture-" + today + ".pcap"
+        filename = output_host + "_EXCHA_Capture-" + today + ".pcap"
         collect_pcap_exch(hostname,eth_exch,filename,seconds,path,psw)
         Rm_file(hostname, filename, psw)
     else:
@@ -47,6 +49,18 @@ def get_pcap():
     cmd=f"del {path}\\hosts.txt"
     sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     return None
+    
+def output_host(hostname,psw):
+        ssh=paramiko.SSHClient() # create ssh client
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=hostname,username="root",password=psw,port=22)
+        stdin, stdout, stderr = ssh.exec_command(f"hostname")
+        time.sleep(2)
+        host=stdout.read()
+        host= host.decode(encoding="utf-8")
+        output_host = ''.join(c for c in host if c.isprintable())  
+        ftp=ssh.open_sftp()
+        return output_host
 
 def find_eth_ddna(hostname,path,psw):
     try:

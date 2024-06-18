@@ -14,9 +14,9 @@ def portbloker():
     global eth1,eth2,eth3,eth4
     global path
     print("!!!WARNING: make sure 'portblocker.tar' is available in your working path!!! ")
-    path = sys.argv[1]
-    hostname = sys.argv[2]
-    psw = sys.argv[3]
+    path = "C:\\Users\\U6017127\\.jenkins\\workspace\\PortBlocker_Tool\\"
+    hostname = sys.argv[1]
+    psw = sys.argv[2]
     install_port_blocker(hostname,path,psw)
     server_eth = collect_NICs(hostname,path,psw)
     eth1="".join(server_eth.get('eth1')).strip("-")
@@ -146,11 +146,11 @@ def block_Ports(hostname,eth1,eth2,eth3,eth4,psw):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname, username="root", password=psw, port=22)
         print("Connected to remote host")
-        a = sys.argv[4] # input("Please provide NIC Card to block: DDN or EXCH?: ").upper()
-        b = sys.argv[5] #("Please provide protocol you want to block UDP, TCP, BOTH: U,T,B: ").upper()
-        c = sys.argv[6] #("Please specify which NIC card you want to block: A, B or All ").upper()
+        a = sys.argv[3] # input("Please provide NIC Card to block: DDN or EXCH?: ").upper()
+        b = sys.argv[4] #("Please provide protocol you want to block UDP, TCP, BOTH: U,T,B: ").upper()
+        c = sys.argv[5] #("Please specify which NIC card you want to block: A, B or All ").upper()
         try:
-          wait=sys.argv[7]
+          wait=sys.argv[6]
           wait = int(wait)
         except ValueError:
             print("please provide time in seconds")

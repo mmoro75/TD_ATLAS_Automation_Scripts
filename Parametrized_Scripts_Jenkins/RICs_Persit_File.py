@@ -7,36 +7,45 @@ from paramiko.ssh_exception import AuthenticationException
 import socket
 import os
 import sys
+import time
 
 print("WARNING: Please make sure PMAT is installed into your local machine at: C:\PMAT\"")
 
 def main():
     hostname=sys.argv[1]
-    username=sys.argv[2]
-    password=sys.argv[3]
-    ric_list = sys.argv[4]
+    password=sys.argv[2]
+    ric_list = sys.argv[3]
     ric_list = ric_list.split()
-    Lh_name=sys.argv[5]
-    venue_name=sys.argv[6]
-    config_path = "/data/Venues/"+ venue_name +"/config/"
-    persist_file = "PERSIST_" + Lh_name +".DAT"
-    download_Persist(hostname,username,password,config_path,persist_file)
+    Lh_name=sys.argv[4]
+    choice = sys.argv[5]
+    if choice == "DAT":
+        persist_file = "PERSIST_" + Lh_name +".DAT"
+    else:
+        persist_file = "PERSIST_" + Lh_name + ".DAT.LOADED"
+    download_Persist(hostname,password,persist_file)
     check_persist(ric_list,persist_file)
-
 
 # this function is to download the PMAT file to your local machine#
 
-def download_Persist(hostname,username,password,config_path,persist_file):
+def download_Persist(hostname,password,persist_file):
 
     try:
 
         ssh=paramiko.SSHClient() # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=hostname,username=username,password=password,port=22)
+        ssh.connect(hostname=hostname,username="root",password=password,port=22)
+
+        stdin, stdout, stderr = ssh.exec_command(f"find / -name " + persist_file)
+        time.sleep(2)
+        config_ph = stdout.read()
+        print(config_ph)
+        config_ph = config_ph.decode(encoding="utf-8")
+        config_ph = ''.join(c for c in config_ph if c.isprintable())  ### THIS IS WORKING
+        print(config_ph)
 
         sftp_client = ssh.open_sftp()
         print(f"File {persist_file} is downloading")
-        sftp_client.get(config_path + persist_file, "C:\PMAT\\x64\\" + persist_file)
+        sftp_client.get(config_ph, "C:\PMAT\\x64\\" + persist_file)
         print(f"Download completed find file {persist_file} at C:\PMAT\\x64")
         sftp_client.close()
         ssh.close
@@ -71,12 +80,12 @@ def check_persist(ric_list,persist_file):
             persist_file
             os.chdir("C:\\PMAT\\x64")
 
-            os.system(f"PMAT dump --dll schema_V9.dll --db {persist_file} --ric {r} --MARKET_PRICE> {r}.txt")
+            os.system(f"PMAT dump --dll schema_V9.dll --db {persist_file} --ric {r} --MARKET_PRICE> {r}")
             filename = f"C:\\PMAT\\x64\\{r}"
-            os.system(f"copy {filename} C:\\Users\\U6017127\\.jenkins\\workspace\\RICs_Perist_File\\")
+            os.system(f"copy {filename} C:\\Users\\U6017127\\.jenkins\\workspace\\RICs_Persist_File")
 
     except FileNotFoundError:
-        print(f"File not found make sure {persist_file} file to analyze is downloaded at C:\\PMAT\\x64")
+        print(f"File not found make sure {persist_file} file to analyze is downloaded at C:\\Users\\U6017127\\.jenkins\\workspace\\RICs_Persist_File")
         quit()
     except Exception as e:
         print(e)

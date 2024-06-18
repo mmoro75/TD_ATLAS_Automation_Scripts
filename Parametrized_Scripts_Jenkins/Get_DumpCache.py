@@ -7,36 +7,56 @@ import sys
 
 def main():
     hostname = sys.argv[1]
-    username = sys.argv[2]
-    password = sys.argv[3]
-    LH_name = sys.argv[4]
-    venue_name = sys.argv[5]
-    config_path = "/data/Venues/" + venue_name + "/config/"
-    local_path = sys.argv[6]
+    password = sys.argv[2]
+    LH_name = sys.argv[3]
+    LH_name = LH_name.split()
+    global output_host
     today=datetime.datetime.now().strftime("%Y%m%d")
-    dumpcache_file = LH_name + "_" + today + ".csv"
-    download_dumpcache(hostname,username,password,LH_name,venue_name,config_path,local_path,dumpcache_file)
+    output_host = output_host(hostname, password)
+    local_path = "C:\\Users\\U6017127\\.jenkins\\workspace\\Get_Dumpcache\\"
+    for lh in LH_name:
+        download_dumpcache(hostname,password,lh,output_host,today,local_path)
+  
 
-
-
+def output_host(hostname, password):
+        ssh = paramiko.SSHClient()  # create ssh client
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=hostname, username="root", password=password, port=22)
+        stdin, stdout, stderr = ssh.exec_command(f"hostname")
+        time.sleep(2)
+        host = stdout.read()
+        host = host.decode(encoding="utf-8")
+        output_host = ''.join(c for c in host if c.isprintable())
+        ftp = ssh.open_sftp()
+        return output_host
 
 # this function is to download the DumpCache and FidFilter files to your local machine#
 
-def download_dumpcache(hostname,username,password,LH_name,venue_name,config_path,local_path,dumpcache_file):
+def download_dumpcache(hostname,password,lh,output_host,today,local_path):
     try:
         ssh = paramiko.SSHClient()  # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=hostname,username=username,password=password,port=22)
+        ssh.connect(hostname=hostname,username="root",password=password,port=22)
         print("I am connected to download DumpCache file")
 
-        stdin, stdout, stderr = ssh.exec_command(f"cd /data/che/bin ; pwd ; ./Commander -n linehandler -c 'dumpcache {LH_name}'")
+        stdin, stdout, stderr = ssh.exec_command(f"cd /data/che/bin ; pwd ; ./Commander -n linehandler -c 'dumpcache {lh}'")
         time.sleep(10)
         outp = stdout.readlines()
+        print(outp)
+        dumpcache_file = lh + "_" + today + ".csv"
+        print(dumpcache_file)
+        stdin, stdout, stderr = ssh.exec_command(f"find / -name " + dumpcache_file)
+        time.sleep(2)
+        config_ph = stdout.read()
+        print(config_ph)
+        config_ph = config_ph.decode(encoding="utf-8")
+        config_ph = ''.join(c for c in config_ph if c.isprintable())
+        print(config_ph)
 
         sftp_client = ssh.open_sftp()
         print("DumpCache file is downloading")
-        sftp_client.get(config_path + dumpcache_file, local_path + "\\" + dumpcache_file)
-#       sftp_client.get(config_path + dumpcache_file, "C:\\Temp\\" + dumpcache_file)
+        sftp_client.get(config_ph, local_path + output_host + "_" + dumpcache_file)
+#       sftp_client.get(config_path + dumpcache_file, "C:\PMAT\\x64\\" + dumpcache_file)
         print("Dumpcache file - download completed")
         sftp_client.close()
         ssh.close

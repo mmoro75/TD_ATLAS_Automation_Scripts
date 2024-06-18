@@ -6,27 +6,42 @@ import os
 from os import listdir
 from os import walk
 import socket
+import time
 
 from paramiko.ssh_exception import AuthenticationException
 
 
 def CoreLogs():
     global today
+    global output_host
     today=datetime.datetime.now().strftime("%Y%m%d")
-    path=sys.argv[1]
-    hostname=sys.argv[2]
-    psw = sys.argv[3]
-    Venue_name = sys.argv[4]
-    filesDownload(hostname,path,psw,Venue_name)
-    FMSClientDownload(hostname,path,psw,Venue_name)
-    SCWDownload(hostname,path,psw,Venue_name)
+    path="C:\\Users\\U6017127\\.jenkins\\workspace\\Venue_Core_Logs_Check\\"
+    hostname=sys.argv[1]
+    psw = sys.argv[2]
+    output_host = output_host(hostname, psw)
+    filesDownload(hostname,path,psw,output_host)
+    FMSClientDownload(hostname,path,psw,output_host)
+    SCWDownload(hostname,path,psw,output_host)
     files=fileList(path)
-    Find_Exceptions(path,files,today)
-    Find_Critical(path,files,today)
+    Find_Exceptions(path,files,today,output_host)
+    Find_Critical(path,files,today,output_host)
     print(f"Completed find your files at: {path}\n \n CLOSE THE WINDOW TO END THE SCRIPT")
     return None
+    
+def output_host(hostname, psw):
+        ssh = paramiko.SSHClient()  # create ssh client
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=hostname, username="root", password=psw, port=22)
+        stdin, stdout, stderr = ssh.exec_command(f"hostname")
+        time.sleep(2)
+        host = stdout.read()
+        host = host.decode(encoding="utf-8")
+        output_host = ''.join(c for c in host if c.isprintable())
+        ftp = ssh.open_sftp()
+        return output_host   
 
-def filesDownload(hostname,path,psw,Venue_name):
+
+def filesDownload(hostname,path,psw,output_host):
     try:
         ssh = paramiko.SSHClient()  # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -43,7 +58,7 @@ def filesDownload(hostname,path,psw,Venue_name):
         ftp = ssh.open_sftp()
         for afile in filelist:
             (head, filename) = os.path.split(afile)
-            ftp.get(afile, path + "\\" +Venue_name+ "_" + str(filename))
+            ftp.get(afile, path + "\\" +output_host+ "_" + str(filename))
 
         ftp.close()
         ssh.close()  # close connection
@@ -72,13 +87,13 @@ def filesDownload(hostname,path,psw,Venue_name):
         quit()
 
 
-def FMSClientDownload(hostname,path,psw,Venue_name):
+def FMSClientDownload(hostname,path,psw,output_host):
     try:
         ssh=paramiko.SSHClient() # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname,username="root",password=psw,port=22)
         ftp=ssh.open_sftp()
-        ftp.get("/data/FMSClient/FMSClient.log",path+"\\" +Venue_name+ "_FMSClient.log")
+        ftp.get("/data/FMSClient/FMSClient.log",path+"\\" +output_host+ "_FMSClient.log")
         ftp.close()
         ssh.close() # close connection
         return None
@@ -105,13 +120,13 @@ def FMSClientDownload(hostname,path,psw,Venue_name):
         print(e)
         quit()
 
-def SCWDownload(hostname,path,psw,Venue_name):
+def SCWDownload(hostname,path,psw,output_host):
     try:
         ssh=paramiko.SSHClient() # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname,username="root",password=psw,port=22)
         ftp=ssh.open_sftp()
-        todaysmf=ftp.get("/data/SCWatchdog/logs/SCWatchdog.log",path+"\\" +Venue_name+ "_SCWatchdog.log")
+        todaysmf=ftp.get("/data/SCWatchdog/logs/SCWatchdog.log",path+"\\" +output_host+ "_SCWatchdog.log")
         ftp.close()
         ssh.close() # close connection
         return None
@@ -146,13 +161,13 @@ def fileList(path):
         files.extend(filenames)
         return files
 
-def Find_Critical(path,files,today):
+def Find_Critical(path,files,today,output_host):
     try:
         my_dir = path
         patt = r"\bCritical\b"
         for f in files:
             fo = open(my_dir + "\\" + f, "r")  # open host file in read mode
-            fo1 = open(my_dir + "\\Critical-log-"+today+".txt", "a")
+            fo1 = open(my_dir + "\\" + output_host + "_CRITICAL-log-"+today+".txt", "a")
             fo1.write(f"\n CRITICAL ERRORS IN  {f}\n ")
             files_lines = fo.readlines()  # readlines create a list with each line of the file
             for each_line in files_lines:  # loop into list crreated
@@ -173,13 +188,13 @@ def Find_Critical(path,files,today):
         quit()
 
 
-def Find_Exceptions(path,files,today):
+def Find_Exceptions(path,files,today,output_host):
     try:
         my_dir = path
         patt = r"\bException\b"
         for f in files:
             fo = open(my_dir + "\\" + f, "r")  # open host file in read mode
-            fo1 = open(my_dir + "\\Exception_log-"+today+".txt", "a")
+            fo1 = open(my_dir + "\\" + output_host + "_EXEPTIONS_log-"+today+".txt", "a")
             fo1.write(f"\n EXCEPTION ERRORS IN  {f}\n \n")
             files_lines = fo.readlines()  # readlines create a list with each line of the file
             for each_line in files_lines:  # loop into list crreated
