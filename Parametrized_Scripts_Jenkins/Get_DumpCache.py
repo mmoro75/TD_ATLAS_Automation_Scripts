@@ -27,7 +27,6 @@ def output_host(hostname, password):
         host = stdout.read()
         host = host.decode(encoding="utf-8")
         output_host = ''.join(c for c in host if c.isprintable())
-        ftp = ssh.open_sftp()
         return output_host
 
 # this function is to download the DumpCache and FidFilter files to your local machine#

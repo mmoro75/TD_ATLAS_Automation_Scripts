@@ -59,7 +59,6 @@ def output_host(hostname,psw):
         host=stdout.read()
         host= host.decode(encoding="utf-8")
         output_host = ''.join(c for c in host if c.isprintable())  
-        ftp=ssh.open_sftp()
         return output_host
 
 def find_eth_ddna(hostname,path,psw):
