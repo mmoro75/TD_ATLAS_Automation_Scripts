@@ -6,7 +6,6 @@ import datetime
 import sys
 
 def main():
-    global output_host
     hostname = sys.argv[1]
     password = sys.argv[2]
     LH_name = sys.argv[3]
@@ -60,7 +59,6 @@ def download_dumpcache(hostname,password,lh,output_host,today,local_path):
         print("Dumpcache file - download completed")
         sftp_client.close()
         ssh.close
-        return None
 
     except socket.gaierror:
         print("Connection Error make sure server ip provided is correct and you are connected to the LSEG VPN")

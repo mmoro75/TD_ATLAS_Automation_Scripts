@@ -7,7 +7,6 @@ from os import listdir
 from os import walk
 import socket
 import time
-import shutil
 
 from paramiko.ssh_exception import AuthenticationException
 
@@ -15,9 +14,9 @@ from paramiko.ssh_exception import AuthenticationException
 def CoreLogs():
     global today
     global output_host
-    today = datetime.datetime.now().strftime("%Y%m%d")
-    path = "C:\\Users\\U6017127\\.jenkins\\workspace\\tmp\\"
-    hostname = sys.argv[1]
+    today=datetime.datetime.now().strftime("%Y%m%d")
+    path="C:\\Users\\U6017127\\.jenkins\\workspace\\Venue_Core_Logs_Check\\"
+    hostname=sys.argv[1]
     psw = sys.argv[2]
     output_host = output_host(hostname, psw)
     Files_Path = path+output_host
@@ -27,13 +26,7 @@ def CoreLogs():
     SCWDownload(hostname, Files_Path, psw, output_host)
     files = fileList(path)
     Find_Exceptions(Files_Path, files, today, output_host)
-   # Find_Critical(Files_Path, files, today, output_host)
-    WorkspacePath = f"C:\\Users\\U6017127\\.jenkins\\workspace\\Venue_Core_Logs_Check\\{output_host}"
-    os.mkdir(WorkspacePath)
-  #  if os.path.exists(WorkspacePath):
-  #      shutil.rmtree(WorkspacePath)
-    os.system(f"xcopy {Files_Path} {WorkspacePath} /s /e /h")
-    shutil.rmtree(Files_Path)
+    Find_Critical(Files_Path, files, today, output_host)
     print(f"Completed find your files at: {Files_Path}\n \n CLOSE THE WINDOW TO END THE SCRIPT")
     return None
 
@@ -177,14 +170,14 @@ def fileList(Files_Path):
 
 def Find_Critical(Files_Path, files, today, output_host):
     try:
-        my_dir = Files_Path + "\\"
+        my_dir = Files_Path
         print(my_dir)
         patt = r"\bCritical\b"
-        fo1 = open(my_dir + output_host + "_CRITICAL-log-" + today + ".txt", "w")
+        fo1 = open(my_dir + "\\" + output_host + "_CRITICAL-log-" + today + ".txt", "w")
         for f in files:
-            fo = open(my_dir + f, "r")  # open host file in read mode
-            fo1 = open(my_dir + output_host + "_CRITICAL-log-" + today + ".txt", "a")
-            fo1.write(f"\n ******************  CRITICAL ERRORS IN  {f} ************************\n ")
+            fo = open(my_dir + "\\" + f, "r")  # open host file in read mode
+            fo1 = open(my_dir + "\\" + output_host + "_CRITICAL-log-" + today + ".txt", "a")
+            fo1.write(f"\n CRITICAL ERRORS IN  {f}\n ")
             files_lines = fo.readlines()  # readlines create a list with each line of the file
             for each_line in files_lines:  # loop into list crreated
                 if re.findall(patt, each_line):  # only print when you fine key word DDNA or DDNB
@@ -209,14 +202,14 @@ def Find_Critical(Files_Path, files, today, output_host):
 
 def Find_Exceptions(Files_Path, files, today, output_host):
     try:
-        my_dir = Files_Path + "\\"
+        my_dir = Files_Path
         print(my_dir)
         patt = r"\bException\b"
-        fo1 = open(my_dir + output_host + "_EXEPTIONS_log-" + today + ".txt", "w")
+        fo1 = open(my_dir + "\\" + output_host + "_EXEPTIONS_log-" + today + ".txt", "w")
         for f in files:
-            fo = open(my_dir + f, "r")  # open host file in read mode
-            fo1 = open(my_dir + output_host + "_EXEPTIONS_log-" + today + ".txt", "a")
-            fo1.write(f"\n ************************* EXCEPTION ERRORS IN  {f} ************************************\n \n")
+            fo = open(my_dir + "\\" + f, "r")  # open host file in read mode
+            fo1 = open(my_dir + "\\" + output_host + "_EXEPTIONS_log-" + today + ".txt", "a")
+            fo1.write(f"\n EXCEPTION ERRORS IN  {f}\n \n")
             files_lines = fo.readlines()  # readlines create a list with each line of the file
             for each_line in files_lines:  # loop into list crreated
                 if re.findall(patt, each_line):  # only print when you fine key word DDNA or DDNB
