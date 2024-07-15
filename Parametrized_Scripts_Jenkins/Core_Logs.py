@@ -16,25 +16,18 @@ def CoreLogs():
     global today
     global output_host
     today = datetime.datetime.now().strftime("%Y%m%d")
-    path = "C:\\Users\\U6017127\\.jenkins\\workspace\\tmp\\"
     hostname = sys.argv[1]
     psw = sys.argv[2]
     output_host = output_host(hostname, psw)
-    Files_Path = path+output_host
-    os.mkdir(Files_Path)
-    FilesDownload(hostname, Files_Path, psw, output_host)
-    FMSClientDownload(hostname, Files_Path, psw, output_host)
-    SCWDownload(hostname, Files_Path, psw, output_host)
-    files = fileList(path)
-    Find_Exceptions(Files_Path, files, today, output_host)
-   # Find_Critical(Files_Path, files, today, output_host)
     WorkspacePath = f"C:\\Users\\U6017127\\.jenkins\\workspace\\Venue_Core_Logs_Check\\{output_host}"
-    os.mkdir(WorkspacePath)
-  #  if os.path.exists(WorkspacePath):
-  #      shutil.rmtree(WorkspacePath)
-    os.system(f"xcopy {Files_Path} {WorkspacePath} /s /e /h")
-    shutil.rmtree(Files_Path)
-    print(f"Completed find your files at: {Files_Path}\n \n CLOSE THE WINDOW TO END THE SCRIPT")
+    os.makedirs(WorkspacePath,exist_ok=True)
+    FilesDownload(hostname, WorkspacePath, psw, output_host)
+    FMSClientDownload(hostname, WorkspacePath, psw, output_host)
+    SCWDownload(hostname, WorkspacePath, psw, output_host)
+    files = fileList(WorkspacePath)
+    Find_Exceptions(WorkspacePath, files, today, output_host)
+   # Find_Critical(WorkspacePath, files, today, output_host)
+    print(f"Completed find your files at: {WorkspacePath}\n \n CLOSE THE WINDOW TO END THE SCRIPT")
     return None
 
 
@@ -50,7 +43,7 @@ def output_host(hostname, psw):
     return output_host
 
 
-def FilesDownload(hostname, Files_Path, psw, output_host):
+def FilesDownload(hostname, WorkspacePath, psw, output_host):
     try:
         ssh = paramiko.SSHClient()  # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -67,7 +60,7 @@ def FilesDownload(hostname, Files_Path, psw, output_host):
         ftp = ssh.open_sftp()
         for afile in filelist:
             (head, filename) = os.path.split(afile)
-            ftp.get(afile, Files_Path + "\\" + output_host + "_" + str(filename))
+            ftp.get(afile, WorkspacePath + "\\" + output_host + "_" + str(filename))
 
         ftp.close()
         ssh.close()  # close connection
@@ -96,13 +89,13 @@ def FilesDownload(hostname, Files_Path, psw, output_host):
         quit()
 
 
-def FMSClientDownload(hostname, Files_Path, psw, output_host):
+def FMSClientDownload(hostname, WorkspacePath, psw, output_host):
     try:
         ssh = paramiko.SSHClient()  # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname, username="root", password=psw, port=22)
         ftp = ssh.open_sftp()
-        ftp.get("/data/FMSClient/FMSClient.log", Files_Path + "\\" + output_host + "_FMSClient.log")
+        ftp.get("/data/FMSClient/FMSClient.log", WorkspacePath + "\\" + output_host + "_FMSClient.log")
         ftp.close()
         ssh.close()  # close connection
         return None
@@ -130,13 +123,13 @@ def FMSClientDownload(hostname, Files_Path, psw, output_host):
         quit()
 
 
-def SCWDownload(hostname, Files_Path, psw, output_host):
+def SCWDownload(hostname, WorkspacePath, psw, output_host):
     try:
         ssh = paramiko.SSHClient()  # create ssh client
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname, username="root", password=psw, port=22)
         ftp = ssh.open_sftp()
-        todaysmf = ftp.get("/data/SCWatchdog/logs/SCWatchdog.log", Files_Path + "\\" + output_host + "_SCWatchdog.log")
+        todaysmf = ftp.get("/data/SCWatchdog/logs/SCWatchdog.log", WorkspacePath + "\\" + output_host + "_SCWatchdog.log")
         ftp.close()
         ssh.close()  # close connection
         return None
@@ -164,8 +157,8 @@ def SCWDownload(hostname, Files_Path, psw, output_host):
         quit()
 
 
-def fileList(Files_Path):
-    my_dir = Files_Path
+def fileList(WorkspacePath):
+    my_dir = WorkspacePath
 
     files = []
     for (dirpath, dirnames, filenames) in walk(my_dir):
@@ -175,9 +168,9 @@ def fileList(Files_Path):
     return files
 
 
-def Find_Critical(Files_Path, files, today, output_host):
+def Find_Critical(WorkspacePath, files, today, output_host):
     try:
-        my_dir = Files_Path + "\\"
+        my_dir = WorkspacePath + "\\"
         print(my_dir)
         patt = r"\bCritical\b"
         fo1 = open(my_dir + output_host + "_CRITICAL-log-" + today + ".txt", "w")
@@ -207,9 +200,9 @@ def Find_Critical(Files_Path, files, today, output_host):
         quit()
 
 
-def Find_Exceptions(Files_Path, files, today, output_host):
+def Find_Exceptions(WorkspacePath, files, today, output_host):
     try:
-        my_dir = Files_Path + "\\"
+        my_dir = WorkspacePath + "\\"
         print(my_dir)
         patt = r"\bException\b"
         fo1 = open(my_dir + output_host + "_EXEPTIONS_log-" + today + ".txt", "w")

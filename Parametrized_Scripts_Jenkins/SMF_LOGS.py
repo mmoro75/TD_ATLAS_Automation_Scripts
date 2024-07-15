@@ -6,6 +6,7 @@ import socket
 from paramiko.ssh_exception import AuthenticationException
 import sys
 import pandas as pd
+import os
 
 
 def ErrorLogs():
@@ -19,6 +20,8 @@ def ErrorLogs():
     hostname = sys.argv[1]
     psw = sys.argv[2]
     output_host = output_host(hostname, psw)
+    os.makedirs(path + output_host,exist_ok=True)
+    path = path + output_host
     options = sys.argv[3]
 
     print(options)
