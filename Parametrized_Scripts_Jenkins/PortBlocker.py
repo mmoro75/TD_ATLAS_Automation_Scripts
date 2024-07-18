@@ -231,7 +231,6 @@ def block_Ports(hostname,eth1,eth2,eth3,eth4,psw):
             stdin, stdout, stderr = ssh.exec_command(
                 "./portblocker -i " + eth3 + " -r B -d B -t " + seconds + " -f 1 -a")
             print(f"All Exchange NIC-A cards traffic are blocked")
-            window.update()
             time.sleep(wait + 10)
             print("Completed all the blocked channles are back on line ")
             ssh.close()
@@ -277,7 +276,6 @@ def block_Ports(hostname,eth1,eth2,eth3,eth4,psw):
             stdin, stdout, stderr = ssh.exec_command(
                 "./portblocker -i " + eth4 + " -r B -d B -t " + seconds + " -f 1 -a")
             print(f"All traffic on Exchange NIC-B cards is blocked")
-            window.update()
             time.sleep(wait + 10)
             print("Completed all the blocked channles are back on line ")
             ssh.close()
